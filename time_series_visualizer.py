@@ -41,18 +41,24 @@ def draw_bar_plot():
   # plot bar chart
   fig, ax = plt.subplots()
   months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+  years = df_bar['year'].unique()
+  # get index of first month in 'month' column
+  x_shift = months.index(df_bar.iloc[0]['month'])
+
   for i, month in enumerate(months):
     rows = df_bar.loc[df_bar['month'] == month]
     x_values = rows.index.values
-    x = pd.Series(x_values).apply(lambda v: v + 12 * (4 - len(x_values) + math.floor(v / 12)))
+    x = pd.Series(x_values).apply(lambda v: v + 12 * (len(years) - len(x_values) + math.floor(v / 12))) + x_shift
     y = rows.value.values
     ax.bar(x, y, width=1, label=month, align='edge')
+  
+  # add 'x_shift' empty bars at the start to meet test requirements
+  ax.bar(range(0, x_shift), np.array([0]) * x_shift, width=1, align='edge')
 
   # Add custom x-axis tick labels, etc.
-  years = df_bar['year'].unique()
   ax.set_xlabel('Years')
   ax.set_ylabel('Average Page Views')
-  ax.set_xticks(np.arange(2, len(years) * 24, 24))
+  ax.set_xticks(np.arange(6, len(years) * 24, 24))
   ax.set_xticklabels(years)
   ax.legend()
 

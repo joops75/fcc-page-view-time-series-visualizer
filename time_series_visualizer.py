@@ -38,35 +38,24 @@ def draw_bar_plot():
   # create new df with complete year and month ranges
   years = df_bar.index.get_level_values('year').unique()
   months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-  new_df_years = []
-  new_df_months = []
-  new_df_values = []
-  for year in range(years[0], years[-1] + 1):
-    for month in months:
-      new_df_years.append(year)
-      new_df_months.append(month)
-      try:
-        new_df_values.append(df_bar.loc[(year, month), 'value'])
-      except:
-        new_df_values.append(0)
-        
-  df_bar = pd.DataFrame({ 'year': new_df_years, 'month': new_df_months, 'value': new_df_values})
+  new_index = pd.MultiIndex.from_product([years, months], names=['year', 'month'])
+  df_bar = df_bar.reindex(new_index, fill_value=0).reset_index()
   
   # plot bar chart
   fig, ax = plt.subplots()
+  gap = len(months)
 
   for i, month in enumerate(months):
     rows = df_bar.loc[df_bar['month'] == month]
     x_values = rows.index.values
-    x = pd.Series(x_values).apply(lambda v: v + 12 * math.floor(v / 12))
+    x = pd.Series(x_values).apply(lambda v: v + gap * math.floor(v / gap))
     y = rows.value.values
     ax.bar(x, y, width=1, label=month, align='edge')
 
   # Add custom x-axis tick labels, etc.
-  years = df_bar['year'].unique()
   ax.set_xlabel('Years')
   ax.set_ylabel('Average Page Views')
-  ax.set_xticks(range(6, len(years) * 24, 24))
+  ax.set_xticks(range(int(gap / 2), len(years) * gap * 2, gap * 2))
   ax.set_xticklabels(years)
   ax.legend()
 
